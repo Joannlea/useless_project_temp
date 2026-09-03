@@ -1,1 +1,642 @@
 
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitFish - High Tech Motion Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cyan: #00f2fe;
+      --cyan-glow: rgba(0, 242, 254, 0.35);
+      --blue: #4facfe;
+      --green: #00e676;
+      --green-glow: rgba(0, 230, 118, 0.4);
+      --bg-dark: #050a14;
+      --card-bg: rgba(13, 22, 41, 0.65);
+      --card-border: rgba(0, 242, 254, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(79, 172, 254, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 10% 90%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        linear-gradient(0deg, rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Glow Orb */
+    .ambient-orb {
+      position: absolute;
+      width: 550px;
+      height: 550px;
+      background: var(--cyan-glow);
+      filter: blur(180px);
+      border-radius: 50%;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Background Free-Swimming Fish */
+    .swimming-fish {
+      position: absolute;
+      font-size: 3rem;
+      cursor: pointer;
+      z-index: 1;
+      user-select: none;
+      transition: filter 0.3s ease, transform 0.2s ease;
+      animation: swimAcross linear infinite;
+    }
+
+    .swimming-fish:hover { transform: scale(1.3); }
+    .swimming-fish.active { 
+      filter: drop-shadow(0 0 16px var(--cyan)) drop-shadow(0 0 6px #ffffff); 
+    }
+
+    #fish1 { top: 8%; animation-duration: 18s; }
+    #fish2 { top: 28%; animation-duration: 24s; animation-delay: -7s; }
+    #fish3 { top: 65%; animation-duration: 16s; animation-delay: -4s; }
+    #fish4 { top: 85%; animation-duration: 21s; animation-delay: -11s; }
+
+    @keyframes swimAcross {
+      0% { left: -10%; transform: scaleX(1); }
+      49% { transform: scaleX(1); }
+      50% { left: 110%; transform: scaleX(-1); }
+      99% { transform: scaleX(-1); }
+      100% { left: -10%; transform: scaleX(1); }
+    }
+
+    .app-workspace {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 1020px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    /* Header Styling */
+    .brand-header { 
+      text-align: center; 
+    }
+    .brand-tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+    .brand-header h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #ffffff 20%, var(--cyan) 60%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-header p { 
+      color: #94a3b8; 
+      font-size: 1rem; 
+      margin-top: 6px; 
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 1.8rem;
+      width: 100%;
+      align-items: stretch;
+    }
+
+    @media (max-width: 820px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Camera Container */
+    .camera-card {
+      position: relative;
+      width: 100%;
+      min-height: 380px;
+      background: #000;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video { width: 100%; height: 100%; object-fit: cover; }
+    canvas { display: none; }
+
+    .cam-status {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: rgba(10, 16, 31, 0.85);
+      backdrop-filter: blur(12px);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 5;
+    }
+
+    .status-dot { 
+      width: 10px; 
+      height: 10px; 
+      border-radius: 50%; 
+      background: #ef4444; 
+    }
+    .cam-status.active .status-dot { 
+      background: var(--green); 
+      box-shadow: 0 0 12px var(--green); 
+    }
+
+    /* Side-to-Side Motion Zones */
+    .zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 25%;
+      border: 2px dashed rgba(0, 242, 254, 0.3);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 20px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: rgba(255, 255, 255, 0.6);
+      pointer-events: none;
+      transition: all 0.2s ease;
+      background: linear-gradient(180deg, transparent 0%, rgba(0, 242, 254, 0.05) 100%);
+    }
+
+    .zone-left { left: 0; border-left: none; }
+    .zone-right { right: 0; border-right: none; }
+
+    .zone.triggered {
+      background: linear-gradient(180deg, rgba(0, 230, 118, 0.15) 0%, rgba(0, 230, 118, 0.3) 100%);
+      border-color: var(--green);
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green-glow);
+    }
+
+    /* Side Dashboard Card */
+    .side-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 28px;
+      padding: 1.8rem;
+      border: 1px solid var(--card-border);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 1.2rem;
+    }
+
+    .selector-container { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .selector-label { 
+      font-size: 0.8rem; 
+      font-weight: 800; 
+      color: #94a3b8; 
+      text-transform: uppercase; 
+      letter-spacing: 1px;
+    }
+
+    select {
+      background: #0f172a;
+      color: var(--cyan);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    select:hover { border-color: var(--cyan); }
+
+    /* Stat Display Grid */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    
+    .metric-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .metric-title { 
+      font-size: 0.72rem; 
+      color: #94a3b8; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      font-weight: 700;
+      margin-bottom: 0.4rem; 
+    }
+    .metric-value { 
+      font-size: 2.2rem; 
+      font-weight: 800; 
+      color: #ffffff; 
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); 
+    }
+
+    /* Award Box */
+    .reward-box {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.1) 0%, rgba(79, 172, 254, 0.05) 100%);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 20px;
+      padding: 1.2rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .reward-title { 
+      font-size: 0.72rem; 
+      color: var(--cyan); 
+      font-weight: 800; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+    }
+    .reward-badge { 
+      font-size: 1.25rem; 
+      font-weight: 800; 
+      color: #facc15; 
+      margin: 8px 0 6px 0; 
+      text-shadow: 0 0 12px rgba(250, 204, 21, 0.3);
+    }
+    .reward-next { 
+      font-size: 0.78rem; 
+      color: #94a3b8; 
+      line-height: 1.4;
+    }
+
+    /* Progress Bar */
+    .progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+
+    /* Buttons */
+    .btn-container { display: flex; gap: 12px; }
+    button {
+      border: none; 
+      padding: 1rem; 
+      border-radius: 16px; 
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem; 
+      font-weight: 800; 
+      transition: all 0.25 ease;
+    }
+
+    .btn-cam {
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      color: #050a14; 
+      flex: 2;
+      box-shadow: 0 8px 25px rgba(0, 242, 254, 0.35);
+    }
+    .btn-cam:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 12px 30px rgba(0, 242, 254, 0.5); 
+    }
+
+    .btn-reset { 
+      background: rgba(239, 68, 68, 0.12); 
+      color: #f87171; 
+      border: 1px solid rgba(239, 68, 68, 0.25); 
+      flex: 1; 
+    }
+    .btn-reset:hover { 
+      background: rgba(239, 68, 68, 0.22); 
+      transform: translateY(-2px);
+    }
+
+    /* Lap Animation Pulse */
+    @keyframes lapPulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.8); }
+      70% { box-shadow: 0 0 0 30px rgba(0, 230, 118, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+    }
+    .pulse { animation: lapPulse 0.8s ease-out; }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-orb"></div>
+
+  <!-- Background Swimming Fish -->
+  <div id="fish1" class="swimming-fish active" onclick="selectFish(1)" title="Click Goldie">🐠</div>
+  <div id="fish2" class="swimming-fish" onclick="selectFish(2)" title="Click Bubbles">🐟</div>
+  <div id="fish3" class="swimming-fish" onclick="selectFish(3)" title="Click Puffy">🐡</div>
+  <div id="fish4" class="swimming-fish" onclick="selectFish(4)" title="Click Finley">🦈</div>
+
+  <div class="app-workspace">
+    
+    <div class="brand-header">
+      <span class="brand-tag">AI Vision Tracker</span>
+      <h1>FitFish AI 🐠</h1>
+      <p>Side-to-Side Motion Tracking & Gamified Awards</p>
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <div class="camera-card" id="camCard">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div id="camStatus" class="cam-status">
+          <span class="status-dot"></span>
+          <span id="statusText">Camera Off</span>
+        </div>
+        <!-- Side-to-Side Detection Zones -->
+        <div id="zoneA" class="zone zone-left">LEFT ZONE</div>
+        <div id="zoneB" class="zone zone-right">RIGHT ZONE</div>
+      </div>
+
+      <canvas id="procCanvas" width="160" height="120"></canvas>
+
+      <div class="side-card">
+        
+        <div class="selector-container">
+          <span class="selector-label">Target Avatar</span>
+          <select id="fishSelect" onchange="selectFish(parseInt(this.value))">
+            <option value="1">Goldie 🐠</option>
+            <option value="2">Bubbles 🐟</option>
+            <option value="3">Puffy 🐡</option>
+            <option value="4">Finley 🦈</option>
+          </select>
+        </div>
+
+        <div class="stats-grid">
+          <div class="metric-card">
+            <div class="metric-title">Auto Laps</div>
+            <div class="metric-value" id="lapCounter">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Calories</div>
+            <div class="metric-value" id="calorieCounter">0.0</div>
+          </div>
+        </div>
+
+        <div class="reward-box">
+          <div class="reward-title">Current Title</div>
+          <div class="reward-badge" id="rewardBadge"> Beginner Swimmer</div>
+          <div class="reward-next" id="rewardNext">Reach 10 laps to unlock 🥉 Bronze Fin!</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="btn-container">
+          <button class="btn-cam" onclick="startTracking()">Start Auto-Track</button>
+          <button class="btn-reset" onclick="resetStats()">Reset</button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const fishData = {
+      1: { name: 'Goldie', laps: 0 },
+      2: { name: 'Bubbles', laps: 0 },
+      3: { name: 'Puffy', laps: 0 },
+      4: { name: 'Finley', laps: 0 }
+    };
+
+    let activeFishId = 1;
+    let prevFrameData = null;
+    let lastZone = null;
+    let isTracking = false;
+
+    // Validation Rules
+    let lastLapTime = 0;
+    const MIN_LAP_INTERVAL = 1200; // Requires at least 1.2s between lap counts
+    const MOTION_THRESHOLD = 25;   // Ignores minor pixel jitter
+
+    function selectFish(id) {
+      activeFishId = id;
+      document.getElementById('fishSelect').value = id;
+
+      for (let i = 1; i <= 4; i++) {
+        const fishElem = document.getElementById(`fish${i}`);
+        if (i === id) {
+          fishElem.classList.add('active');
+        } else {
+          fishElem.classList.remove('active');
+        }
+      }
+
+      updateDisplay();
+    }
+
+    async function startTracking() {
+      const video = document.getElementById('webcam');
+      const status = document.getElementById('camStatus');
+      const statusText = document.getElementById('statusText');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        
+        status.classList.add('active');
+        statusText.innerText = "Tracking Live";
+        statusText.style.color = "#ffffff";
+        isTracking = true;
+
+        setInterval(processMotion, 150);
+      } catch (err) {
+        alert("Camera permission is required for motion detection.");
+        statusText.innerText = "Access Denied";
+      }
+    }
+
+    function processMotion() {
+      if (!isTracking) return;
+
+      const video = document.getElementById('webcam');
+      const canvas = document.getElementById('procCanvas');
+      const ctx = canvas.getContext('2d');
+
+      if (video.readyState !== 4) return;
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const currentFrame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      const zoneA = document.getElementById('zoneA');
+      const zoneB = document.getElementById('zoneB');
+
+      if (prevFrameData) {
+        let leftMotion = 0;
+        let rightMotion = 0;
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const data = currentFrame.data;
+        const prevData = prevFrameData.data;
+
+        for (let y = 0; y < height; y += 4) {
+          for (let x = 0; x < width; x += 4) {
+            const index = (y * width + x) * 4;
+            const diff = Math.abs(data[index] - prevData[index]) +
+                         Math.abs(data[index+1] - prevData[index+1]) +
+                         Math.abs(data[index+2] - prevData[index+2]);
+
+            if (diff > 90) {
+              if (x < width * 0.25) leftMotion++;
+              if (x > width * 0.75) rightMotion++;
+            }
+          }
+        }
+
+        const isLeftTriggered = leftMotion > MOTION_THRESHOLD;
+        const isRightTriggered = rightMotion > MOTION_THRESHOLD;
+
+        zoneA.classList.toggle('triggered', isLeftTriggered);
+        zoneB.classList.toggle('triggered', isRightTriggered);
+
+        const now = Date.now();
+
+        // Must alternate between Left and Right with a minimum delay
+        if (isLeftTriggered && lastZone !== 'left') {
+          if (lastZone === 'right' && (now - lastLapTime) > MIN_LAP_INTERVAL) {
+            triggerAutoLap();
+            lastLapTime = now;
+          }
+          lastZone = 'left';
+        } else if (isRightTriggered && lastZone !== 'right') {
+          if (lastZone === 'left' && (now - lastLapTime) > MIN_LAP_INTERVAL) {
+            triggerAutoLap();
+            lastLapTime = now;
+          }
+          lastZone = 'right';
+        }
+      }
+
+      prevFrameData = currentFrame;
+    }
+
+    function triggerAutoLap() {
+      fishData[activeFishId].laps += 1;
+
+      const camCard = document.getElementById('camCard');
+      camCard.classList.remove('pulse');
+      void camCard.offsetWidth;
+      camCard.classList.add('pulse');
+
+      updateDisplay();
+    }
+
+    function resetStats() {
+      fishData[activeFishId].laps = 0;
+      lastZone = null;
+      lastLapTime = 0;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const currentLaps = fishData[activeFishId].laps;
+      const currentCalories = (currentLaps * 0.5).toFixed(1);
+
+      document.getElementById('lapCounter').innerText = currentLaps;
+      document.getElementById('calorieCounter').innerText = currentCalories;
+
+      const badgeElem = document.getElementById('rewardBadge');
+      const nextElem = document.getElementById('rewardNext');
+      const fillElem = document.getElementById('progressFill');
+
+      if (currentLaps >= 50) {
+        badgeElem.innerText = "👑 Aquaman Legend!";
+        nextElem.innerText = "Top Award Unlocked! 🎉";
+        fillElem.style.width = "100%";
+      } else if (currentLaps >= 25) {
+        badgeElem.innerText = "🥈 Silver Fin Runner!";
+        nextElem.innerText = `Next: 👑 Aquaman Legend at 50 laps (${50 - currentLaps} left)`;
+        fillElem.style.width = `${((currentLaps - 25) / 25) * 100}%`;
+      } else if (currentLaps >= 10) {
+        badgeElem.innerText = "🥉 Bronze Fin!";
+        nextElem.innerText = `Next: 🥈 Silver Fin Runner at 25 laps (${25 - currentLaps} left)`;
+        fillElem.style.width = `${((currentLaps - 10) / 15) * 100}%`;
+      } else {
+        badgeElem.innerText = "🥚 Beginner Swimmer";
+        nextElem.innerText = `Reach 10 laps for 🥉 Bronze Fin (${10 - currentLaps} left)`;
+        fillElem.style.width = `${(currentLaps / 10) * 100}%`;
+      }
+    }
+  </script>
+
+</body>
+</html>

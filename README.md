@@ -1,103 +1,43 @@
-<img width="1280" height="640" alt="git (1)" src="https://github.com/user-attachments/assets/8920b256-2ba8-4988-b824-5351134eb4bd" />
-
-
-
-# [Project Name] 🎯
-
+# FitFish AI 🎯
 
 ## Basic Details
-### Team Name: [Name]
-
+### Team Name: 
+[Add your Team Name here]
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: JOANN LEA VARGHESE - SREE BUDDHA COLLEGE OF ENGINEERING 
+
 
 ### Project Description
-[2-3 lines about what your project does]
+FitFish AI is an AI-powered aquarium fitness dashboard that tracks pet fish motion using real-time computer vision. It measures swimming laps, calculates calorie burn based on movement velocity, and assigns gamified fitness ranks like "Beginner Swimmer" and "Gold Fin Champ" to keep underwater pets in peak physical condition.
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+Fish lead extremely sedentary lifestyles spent floating aimlessly and overeating food flakes, leading to unmotivated goldfish and out-of-shape bettas who lack structured workout routines.
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
-
-## Technical Details
-### Technologies/Components Used
-For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
-
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
-
-### Implementation
-For Software:
-# Installation
-[commands]
-
-# Run
-[commands]
-
-### Project Documentation
-For Software:
-
-# Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
-
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
-
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
-
-# Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
-
-For Hardware:
-
-# Schematic & Circuit
-![Circuit](Add your circuit diagram here)
-*Add caption explaining connections*
-
-![Schematic](Add your schematic diagram here)
-*Add caption explaining the schematic*
-
-# Build Photos
-![Components](Add photo of your components here)
-*List out all components shown*
-
-![Build](Add photos of build process here)
-*Explain the build steps*
-
-![Final](Add photo of final product here)
-*Explain the final build*
-
-### Project Demo
-# Video
-[Add your demo video link here]
-*Explain what the video demonstrates*
-
-# Additional Demos
-[Add any extra demo materials/links]
-
-## Team Contributions
-- [Name 1]: [Specific contributions]
-- [Name 2]: [Specific contributions]
-- [Name 3]: [Specific contributions]
+An interactive glassmorphic digital dashboard that leverages real-time webcam color and contour tracking to count aquatic laps, monitor multi-fish fitness stats, and gamify aquarium life.
 
 ---
-Made with ❤️ at TinkerHub Useless Projects 
 
-![Static Badge](https://img.shields.io/badge/TinkerHub-24?color=%23000000&link=https%3A%2F%2Fwww.tinkerhub.org%2F)
-![Static Badge](https://img.shields.io/badge/UselessProjects--26-26?link=https%3A%2F%2Ftinkerhub.org%2Fevents%2F1M8ORET9A1%2Fuseless-projects-3.0)
+## Technical Details
 
+### Technologies/Components Used
+For Software:
+- **Languages:** HTML5, CSS3, JavaScript (ES6+)
+- **Computer Vision & Processing:** OpenCV.js (Color Masking, HSV Conversion, Bounding Box Contour Tracking)
+- **Styling:** Custom CSS Glassmorphism, CSS Grid & Flexbox, Google Fonts
+- **Developer Tools:** VS Code, Git, GitHub
 
+---
 
+### Implementation
+
+#### For Software:
+
+# Installation
+```bash
+# Clone the repository
+git clone [https://github.com/your-username/fitfish-ai.git](https://github.com/your-username/fitfish-ai.git)
+
+# Navigate to the project directory
+cd fitfish-ai
