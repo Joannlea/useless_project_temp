@@ -30,13 +30,13 @@ For Software:
 
 # Screenshots
 
-![Idle Dashboard State](./screenshots/idle_state.png)
+![Idle Dashboard State](./screenshots/img 1.png)
 *FitFish AI web interface showing the initial setup state with camera access standby, side-to-side zone lines, and default metrics.*
 
-![Live Tracking Session](./screenshots/live_tracking.png)
+![Live Tracking Session](./screenshots/img 2.png)
 *Active tracking session monitoring a swimming goldfish, reflecting real-time auto lap counting (39 laps), calorie estimation (19.5 kcal), and rank updates ("Silver Fin Runner").*
 
-![Live Metric Calibration](./screenshots/metric_calibration.png)
+![Live Metric Calibration](./screenshots/img 3.png)
 *Live vision analysis tracking fish movement across defined zones with dynamic progress towards the next gamified milestone ("Beginner Swimmer").*
 
 
